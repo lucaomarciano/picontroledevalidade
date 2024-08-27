@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Validade de Produtos</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Controle de Validade de Produtos</h1>
+
+    <!-- Exibe mensagens de sucesso ou erro -->
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            <div class="alert alert-success" role="alert">
+                {{ messages[0][1] }}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Exibe produtos próximos da data de vencimento -->
+    {% if products_near_expiry %}
+        <div class="alert alert-warning">
+            <strong>Atenção:</strong> Os seguintes produtos estão próximos da data de vencimento:
+            <ul>
+                {% for product in products_near_expiry %}
+                    <li>Descrição: {{ product[1] }}, Código de Barras: {{ product[2] }}, Data de Validade: {{ product[3] }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form action="{{ url_for('add_product') }}" method="POST" class="mb-4">
+        <div class="form-row">
+            <div class="col">
+                <input type="text" class="form-control" name="description" placeholder="Descrição" required>
+            </div>
+            <div class="col">
+                <input type="text" class="form-control" name="barcode" placeholder="Código de Barras" required>
+            </div>
+            <div class="col">
+                <input type="date" class="form-control" name="expiry_date" required>
+            </div>
+            <div class="col">
+                <button type="submit" class="btn btn-primary">Adicionar Produto</button>
+            </div>
+        </div>
+    </form>
+    
+    <a href="{{ url_for('show_products') }}" class="btn btn-info mb-4">Mostrar Produtos</a>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
