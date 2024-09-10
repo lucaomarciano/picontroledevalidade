@@ -5,40 +5,177 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Produto</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e9ecef; /* Cor de fundo neutra */
+            font-family: Arial, sans-serif;
+            color: #212529; /* Cor de texto padrão para melhor contraste */
+        }
+        .container {
+            margin-top: 30px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #002244; /* Cor do cabeçalho */
+            text-align: center; /* Centraliza o cabeçalho */
+        }
+        .alert {
+            font-size: 1.2rem;
+        }
+        .btn-primary {
+            background-color: #004488; /* Cor dos botões primários */
+            color: #ffffff;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-color: #002244; /* Cor do botão ao passar o mouse */
+            color: #ffffff;
+            outline: 2px solid #ffffff; /* Destaque para foco no teclado */
+            outline-offset: 2px;
+        }
+        .btn-secondary {
+            background-color: #6c757d; /* Cinza Médio */
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .btn-secondary:hover,
+        .btn-secondary:focus {
+            background-color: #5a6268; /* Cinza Escuro */
+            color: #ffffff;
+            outline: 2px solid #ffffff; /* Destaque para foco no teclado */
+            outline-offset: 2px;
+        }
+        .form-control {
+            border-radius: 20px;
+            padding: 10px;
+            border: 1px solid #6c757d; /* Cinza Médio */
+        }
+        .is-valid {
+            border-color: #28a745;
+        }
+        .is-invalid {
+            border-color: #dc3545;
+        }
+        .spinner-border {
+            margin-right: 10px;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
 </head>
 <body>
-<div class="container mt-5">
+<div class="container" role="main">
     <h1>Editar Produto</h1>
 
-    <!-- Exibe mensagens de sucesso ou erro -->
+    <!-- Placeholder para mensagens de alerta dinâmicas -->
+    <div id="alert-placeholder" aria-live="polite"></div>
+
     {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}
-            <div class="alert alert-success" role="alert">
-                {{ messages[0][1] }}
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    showAlert('{{ messages[0][1] }}', '{{ messages[0][0] }}');
+                });
+            </script>
         {% endif %}
     {% endwith %}
 
-    <form action="{{ url_for('edit_product', product_id=product[0]) }}" method="POST">
+    <form action="{{ url_for('edit_product', product_id=product[0]) }}" method="POST" class="needs-validation" novalidate>
         <div class="form-group">
-            <label for="description">Descrição</label>
-            <input type="text" class="form-control" id="description" name="description" value="{{ product[1] }}" required>
+            <label for="description" class="sr-only">Descrição</label>
+            <input type="text" class="form-control" id="description" name="description" value="{{ product[1] }}" required aria-required="true">
         </div>
         <div class="form-group">
-            <label for="barcode">Código de Barras</label>
-            <input type="text" class="form-control" id="barcode" name="barcode" value="{{ product[2] }}" required>
+            <label for="barcode" class="sr-only">Código de Barras</label>
+            <input type="text" class="form-control" id="barcode" name="barcode" value="{{ product[2] }}" required aria-required="true">
         </div>
         <div class="form-group">
-            <label for="expiry_date">Data de Validade</label>
-            <input type="date" class="form-control" id="expiry_date" name="expiry_date" value="{{ product[3] }}" required>
+            <label for="expiry_date" class="sr-only">Data de Validade</label>
+            <input type="date" class="form-control" id="expiry_date" name="expiry_date" value="{{ product[3] }}" required aria-required="true">
         </div>
-        <button type="submit" class="btn btn-primary">Atualizar Produto</button>
+        <div class="btn-group mt-3" role="group" aria-label="Ações">
+            <button type="submit" class="btn btn-primary" onclick="showLoading()" aria-label="Atualizar Produto">
+                <span id="loadingText">Atualizar Produto</span>
+                <div id="loadingSpinner" class="spinner-border text-light" role="status" style="display:none;" aria-hidden="true">
+                    <span class="sr-only">Carregando...</span>
+                </div>
+            </button>
+            <a href="{{ url_for('show_products') }}" class="btn btn-secondary ml-2" aria-label="Voltar à Lista de Produtos">Voltar à Lista de Produtos</a>
+        </div>
     </form>
-    <a href="{{ url_for('show_products') }}" class="btn btn-secondary mt-3">Voltar a Lista de Produtos</a>
 </div>
+
+<footer class="footer bg-light text-center py-3">
+    <div class="container">
+        <span class="text-muted">Todos os direitos reservados &copy; 2024</span>
+    </div>
+</footer>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    // Validação de formulário no cliente
+    document.addEventListener('DOMContentLoaded', function () {
+        var forms = document.getElementsByClassName('needs-validation');
+        Array.prototype.forEach.call(forms, function (form) {
+            form.addEventListener('submit', function (event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+
+    // Validação específica para o campo de código de barras
+    document.getElementById('barcode').addEventListener('input', function (event) {
+        var barcode = event.target.value;
+        if (isNaN(barcode)) {
+            event.target.setCustomValidity('O código de barras deve ser um número.');
+            event.target.reportValidity();
+        } else {
+            event.target.setCustomValidity('');
+        }
+    });
+
+    // Função para exibir mensagens de alerta dinâmicas
+    function showAlert(message, type) {
+        var alertPlaceholder = document.getElementById('alert-placeholder');
+        var alertHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert" aria-live="assertive" aria-atomic="true">
+                            ${message}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Fechar">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>`;
+        alertPlaceholder.innerHTML = alertHTML;
+
+        // Alerta desaparece após 5 segundos
+        setTimeout(function () {
+            $('.alert').alert('close');
+        }, 5000);
+    }
+
+    // Função para mostrar o spinner de carregamento
+    function showLoading() {
+        document.getElementById('loadingSpinner').style.display = 'block';
+        document.getElementById('loadingText').style.display = 'none'; // Esconde o texto do botão
+    }
+</script>
 </body>
 </html>

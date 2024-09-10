@@ -5,27 +5,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mostrar Produtos</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e9ecef; /* Cor de fundo neutra */
+            font-family: Arial, sans-serif;
+            color: #212529; /* Cor de texto padrão para melhor contraste */
+        }
+        .container {
+            margin-top: 30px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #002244; /* Cor do cabeçalho */
+            text-align: center; /* Centraliza o cabeçalho */
+        }
+        .alert {
+            font-size: 1.2rem;
+        }
+        .btn-primary {
+            background-color: #004488; /* Cor dos botões primários */
+            color: #ffffff;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-color: #002244; /* Cor do botão ao passar o mouse */
+            color: #ffffff;
+            outline: 2px solid #ffffff; /* Destaque para foco no teclado */
+            outline-offset: 2px;
+        }
+        .btn-danger {
+            background-color: #dc3545; /* Vermelho Claro */
+            border-radius: 20px;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .btn-danger:hover,
+        .btn-danger:focus {
+            background-color: #c82333; /* Vermelho mais escuro */
+            color: #ffffff;
+            outline: 2px solid #ffffff; /* Destaque para foco no teclado */
+            outline-offset: 2px;
+        }
+        .btn-warning {
+            background-color: #ffc107; /* Amarelo Claro */
+            border-radius: 20px;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .btn-warning:hover,
+        .btn-warning:focus {
+            background-color: #e0a800; /* Amarelo mais escuro */
+            color: #ffffff;
+            outline: 2px solid #ffffff; /* Destaque para foco no teclado */
+            outline-offset: 2px;
+        }
+        .form-control {
+            border-radius: 20px;
+            padding: 10px;
+            border: 1px solid #ced4da; /* Borda de inputs */
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25); /* Sombra ao focar no input */
+            border-color: #80bdff; /* Cor da borda ao focar */
+        }
+        .table {
+            margin-top: 20px;
+        }
+        .table thead th {
+            background-color: #003366; /* Azul Escuro */
+            color: #ffffff;
+            text-align: center;
+            cursor: pointer;
+        }
+        .table tbody td {
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-<div class="container mt-5">
+<div class="container" role="main">
     <h1>Lista de Produtos</h1>
 
-    <!-- Exibe mensagens de sucesso ou erro -->
+    <!-- Placeholder para mensagens de alerta dinâmicas -->
+    <div id="alert-placeholder" aria-live="polite"></div>
+
+    <!-- Campo de pesquisa -->
+    <label for="searchInput" class="sr-only">Pesquisar produtos</label>
+    <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Pesquisar produtos..." class="form-control mb-3" aria-label="Pesquisar produtos">
+
     {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}
-            <div class="alert alert-success" role="alert">
-                {{ messages[0][1] }}
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    showAlert('{{ messages[0][1] }}', '{{ messages[0][0] }}');
+                });
+            </script>
         {% endif %}
     {% endwith %}
 
-    <table class="table table-bordered">
+    <table class="table table-bordered" id="productsTable" data-sort-asc="true" aria-label="Tabela de produtos">
         <thead>
             <tr>
-                <th>Descrição</th>
-                <th>Código de Barras</th>
-                <th>Data de validade</th>
-                <th>Ações</th>
+                <th scope="col" onclick="sortTable(0)" tabindex="0" aria-sort="none" role="columnheader" aria-label="Ordenar por Descrição">Descrição</th>
+                <th scope="col" onclick="sortTable(1)" tabindex="0" aria-sort="none" role="columnheader" aria-label="Ordenar por Código de Barras">Código de Barras</th>
+                <th scope="col" onclick="sortTable(2)" tabindex="0" aria-sort="none" role="columnheader" aria-label="Ordenar por Data de Validade">Data de Validade</th>
+                <th scope="col">Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -37,20 +133,120 @@
                 <td>
                     <!-- Formulário para excluir um produto -->
                     <form action="{{ url_for('delete_product', product_id=product[0]) }}" method="POST" style="display:inline;">
-                        <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="confirmDeletion(event)" aria-label="Excluir Produto">Excluir</button>
                     </form>
                     <!-- Link para editar um produto -->
-                    <a href="{{ url_for('edit_product', product_id=product[0]) }}" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="{{ url_for('edit_product', product_id=product[0]) }}" class="btn btn-warning btn-sm" aria-label="Editar Produto">Editar</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <a href="{{ url_for('index') }}" class="btn btn-primary">Voltar ao Inicío</a>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">Voltar ao Início</a>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<footer class="footer bg-light text-center py-3">
+    <div class="container">
+        <span class="text-muted">Todos os direitos reservados &copy; 2024</span>
+    </div>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    // Função para exibir mensagens de alerta dinâmicas
+    function showAlert(message, type) {
+        var alertPlaceholder = document.getElementById('alert-placeholder');
+        var alertHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert" aria-live="assertive" aria-atomic="true">
+                            ${message}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Fechar">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>`;
+        alertPlaceholder.innerHTML = alertHTML;
+
+        // Alerta desaparece após 5 segundos
+        setTimeout(function () {
+            $('.alert').alert('close');
+        }, 5000);
+    }
+
+    // Função para confirmar exclusão
+    function confirmDeletion(event) {
+        if (!confirm('Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.')) {
+            event.preventDefault(); // Cancela a exclusão se o usuário não confirmar
+        }
+    }
+
+    // Função de pesquisa de produtos
+    function searchProducts() {
+        var input = document.getElementById('searchInput');
+        var filter = input.value.toLowerCase();
+        var table = document.getElementById('productsTable');
+        var tr = table.getElementsByTagName('tr');
+
+        for (var i = 1; i < tr.length; i++) { // Pula o cabeçalho
+            var td = tr[i].getElementsByTagName('td');
+            var found = false;
+            for (var j = 0; j < td.length; j++) {
+                if (td[j] && td[j].innerText.toLowerCase().indexOf(filter) > -1) {
+                    found = true;
+                    break;
+                }
+            }
+            tr[i].style.display = found ? '' : 'none';
+        }
+    }
+
+    // Função de ordenação de tabela
+    function sortTable(columnIndex) {
+        var table = document.getElementById('productsTable');
+        var rows = Array.prototype.slice.call(table.rows, 1); // Exclui a linha de cabeçalho
+        var ascending = table.getAttribute('data-sort-asc') === 'true'; // Verifica se a ordem atual é ascendente
+
+        rows.sort(function(a, b) {
+            var cellA = a.cells[columnIndex].innerText.toLowerCase();
+            var cellB = b.cells[columnIndex].innerText.toLowerCase();
+
+            if (!isNaN(cellA) && !isNaN(cellB)) {
+                return ascending ? cellA - cellB : cellB - cellA;
+            }
+            return ascending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+        });
+
+        // Reinsere as linhas ordenadas na tabela
+        for (var i = 0; i < rows.length; i++) {
+            table.tBodies[0].appendChild(rows[i]);
+        }
+
+        // Alterna a direção de ordenação
+        table.setAttribute('data-sort-asc', !ascending);
+
+        // Atualiza o estado de aria-sort
+        var headers = table.querySelectorAll('th');
+        headers.forEach(function(header, index) {
+            if (index === columnIndex) {
+                header.setAttribute('aria-sort', ascending ? 'descending' : 'ascending');
+            } else {
+                header.setAttribute('aria-sort', 'none');
+            }
+        });
+    }
+
+    // Atualização automática da lista de produtos
+    function updateProductsList() {
+        $.ajax({
+            url: "{{ url_for('show_products') }}",
+            type: "GET",
+            success: function(data) {
+                $('#productsTable').html($(data).find('#productsTable').html());
+            }
+        });
+    }
+
+    // Atualizar a cada 10 segundos
+    setInterval(updateProductsList, 10000);
+</script>
 </body>
 </html>

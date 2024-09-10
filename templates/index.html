@@ -5,23 +5,116 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Validade de Produtos</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa; /* Cor de fundo neutra */
+            font-family: Arial, sans-serif;
+            color: #212529; /* Cor de texto padrão para melhor contraste */
+        }
+        .container {
+            margin-top: 30px;
+            padding: 30px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #004488; /* Cor de cabeçalho */
+            text-align: center; /* Centraliza o cabeçalho */
+        }
+        .alert {
+            font-size: 1.2rem;
+        }
+        .btn-custom {
+            background-color: #004488; /* Cor dos botões */
+            color: #ffffff;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .btn-custom:hover,
+        .btn-custom:focus {
+            background-color: #002244; /* Cor do botão ao passar o mouse */
+            color: #ffffff;
+            outline: none;
+        }
+        .form-control {
+            border-radius: 20px;
+            padding: 10px;
+            border: 1px solid #ced4da; /* Borda de inputs */
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25); /* Sombra ao focar no input */
+            border-color: #80bdff; /* Cor da borda ao focar */
+        }
+        .form-row .col {
+            margin-bottom: 15px;
+        }
+        .form-row .col:last-child {
+            margin-bottom: 0;
+        }
+        .is-valid {
+            border-color: #28a745;
+        }
+        .is-invalid {
+            border-color: #dc3545;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .spinner-border {
+            display: none;
+            margin: 20px auto;
+        }
+        .logout-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background-color: #dc3545; /* Cor vermelha */
+            color: #ffffff;
+            border: none;
+            border-radius: 50px; /* Forma arredondada */
+            padding: 5px 10px; /* Tamanho menor */
+            font-size: 0.8rem; /* Tamanho de fonte menor */
+        }
+        .logout-button:hover,
+        .logout-button:focus {
+            background-color: #c82333; /* Cor vermelha mais escura ao passar o mouse */
+            color: #ffffff;
+            outline: none;
+        }
+    </style>
 </head>
 <body>
-<div class="container mt-5">
+<div class="container" role="main">
+    <!-- Botão de Logout -->
+    <a href="{{ url_for('logout') }}" class="btn logout-button" role="button">Logout</a>
+    
     <h1>Controle de Validade de Produtos</h1>
+    <!-- Placeholder para mensagens de alerta dinâmicas -->
+    <div id="alert-placeholder" aria-live="polite"></div>
 
-    <!-- Exibe mensagens de sucesso ou erro -->
     {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}
-            <div class="alert alert-success" role="alert">
-                {{ messages[0][1] }}
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    showAlert('{{ messages[0][1] }}', '{{ messages[0][0] }}');
+                });
+            </script>
         {% endif %}
     {% endwith %}
 
     <!-- Exibe produtos próximos da data de vencimento -->
     {% if products_near_expiry %}
-        <div class="alert alert-warning">
+        <div class="alert alert-warning" role="alert">
             <strong>Atenção:</strong> Os seguintes produtos estão próximos da data de vencimento:
             <ul>
                 {% for product in products_near_expiry %}
@@ -31,28 +124,107 @@
         </div>
     {% endif %}
 
-    <form action="{{ url_for('add_product') }}" method="POST" class="mb-4">
+    <form action="{{ url_for('add_product') }}" method="POST" class="needs-validation" novalidate>
         <div class="form-row">
             <div class="col">
-                <input type="text" class="form-control" name="description" placeholder="Descrição" required>
+                <label for="description" class="sr-only">Descrição</label>
+                <input type="text" class="form-control" id="description" name="description" placeholder="Descrição" required aria-required="true">
             </div>
             <div class="col">
-                <input type="text" class="form-control" name="barcode" placeholder="Código de Barras" required>
+                <label for="barcode" class="sr-only">Código de Barras</label>
+                <input type="text" class="form-control" id="barcode" name="barcode" placeholder="Código de Barras" required aria-required="true">
             </div>
             <div class="col">
-                <input type="date" class="form-control" name="expiry_date" required>
-            </div>
-            <div class="col">
-                <button type="submit" class="btn btn-primary">Adicionar Produto</button>
+                <label for="expiry_date" class="sr-only">Data de Validade</label>
+                <input type="date" class="form-control" id="expiry_date" name="expiry_date" required aria-required="true">
             </div>
         </div>
+        <div class="btn-group" role="group" aria-label="Navegação">
+            <button type="submit" class="btn btn-custom" onclick="showLoading()" aria-label="Adicionar Produto">Adicionar Produto</button>
+            <a href="{{ url_for('show_products') }}" class="btn btn-custom">Mostrar Produtos</a>
+        </div>
+        <div id="loadingSpinner" class="spinner-border text-primary" role="status" aria-hidden="true">
+            <span class="sr-only">Carregando...</span>
+        </div>
     </form>
-    
-    <a href="{{ url_for('show_products') }}" class="btn btn-info mb-4">Mostrar Produtos</a>
 </div>
+
+<footer class="footer bg-light text-center py-3">
+    <div class="container">
+        <span class="text-muted">Todos os direitos reservados &copy; 2024</span>
+    </div>
+</footer>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    // Validação de formulário no cliente
+    document.addEventListener('DOMContentLoaded', function () {
+        var forms = document.getElementsByClassName('needs-validation');
+        Array.prototype.forEach.call(forms, function (form) {
+            form.addEventListener('submit', function (event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+
+    // Validação específica para o campo de código de barras
+    document.getElementById('barcode').addEventListener('input', function (event) {
+        var barcode = event.target.value;
+        if (isNaN(barcode)) {
+            event.target.setCustomValidity('O código de barras deve ser um número.');
+            event.target.reportValidity();
+        } else {
+            event.target.setCustomValidity('');
+        }
+    });
+
+    // Função para exibir mensagens de alerta dinâmicas
+    function showAlert(message, type) {
+        var alertPlaceholder = document.getElementById('alert-placeholder');
+        var alertHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert" aria-live="assertive" aria-atomic="true">
+                            ${message}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Fechar">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>`;
+        alertPlaceholder.innerHTML = alertHTML;
+
+        // Alerta desaparece após 5 segundos
+        setTimeout(function () {
+            $('.alert').alert('close');
+        }, 5000);
+    }
+
+    // Função para mostrar o spinner de carregamento
+    function showLoading() {
+        document.getElementById('loadingSpinner').style.display = 'block';
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingSpinner').style.display = 'none';
+    }
+
+    // Feedback visual para formulários
+    document.querySelectorAll('.form-control').forEach(function(input) {
+        input.addEventListener('input', function() {
+            if (input.checkValidity()) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+            } else {
+                input.classList.remove('is-valid');
+                input.classList.add('is-invalid');
+            }
+        });
+    });
+
+    // Esconde o spinner automaticamente após 5 segundos
+    setTimeout(hideLoading, 5000);
+</script>
 </body>
 </html>
