@@ -3,88 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mostrar Produtos</title>
+    <title>Lista de Produtos</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #e9ecef; /* Cor de fundo neutra */
-            font-family: Arial, sans-serif;
-            color: #212529; /* Cor de texto padrão para melhor contraste */
+            background-color: #f8f9fa; /* Cor de fundo neutra */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #212529; /* Cor de texto padrão */
         }
         .container {
-            margin-top: 30px;
+            margin-top: 40px;
             padding: 20px;
             background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         h1 {
             margin-bottom: 20px;
             font-size: 2.5rem;
             font-weight: bold;
-            color: #002244; /* Cor do cabeçalho */
-            text-align: center; /* Centraliza o cabeçalho */
+            color: #002244; /* Cor do título */
+            text-align: center;
         }
         .alert {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
         .btn-primary {
-            background-color: #004488; /* Cor dos botões primários */
+            background-color: #004488;
             color: #ffffff;
-            border-radius: 20px;
+            border-radius: 25px;
             padding: 10px 20px;
             font-size: 1rem;
             cursor: pointer;
         }
         .btn-primary:hover,
         .btn-primary:focus {
-            background-color: #002244; /* Cor do botão ao passar o mouse */
+            background-color: #002244;
             color: #ffffff;
-            outline: 2px solid #ffffff; /* Destaque para foco no teclado */
+            outline: 2px solid #ffffff;
             outline-offset: 2px;
         }
-        .btn-danger {
-            background-color: #dc3545; /* Vermelho Claro */
-            border-radius: 20px;
+        .btn-danger, .btn-warning {
+            border-radius: 25px;
             padding: 5px 10px;
             font-size: 0.9rem;
             cursor: pointer;
+        }
+        .btn-danger {
+            background-color: #dc3545;
         }
         .btn-danger:hover,
         .btn-danger:focus {
-            background-color: #c82333; /* Vermelho mais escuro */
+            background-color: #c82333;
             color: #ffffff;
-            outline: 2px solid #ffffff; /* Destaque para foco no teclado */
+            outline: 2px solid #ffffff;
             outline-offset: 2px;
         }
         .btn-warning {
-            background-color: #ffc107; /* Amarelo Claro */
-            border-radius: 20px;
-            padding: 5px 10px;
-            font-size: 0.9rem;
-            cursor: pointer;
+            background-color: #ffc107;
         }
         .btn-warning:hover,
         .btn-warning:focus {
-            background-color: #e0a800; /* Amarelo mais escuro */
+            background-color: #e0a800;
             color: #ffffff;
-            outline: 2px solid #ffffff; /* Destaque para foco no teclado */
+            outline: 2px solid #ffffff;
             outline-offset: 2px;
         }
         .form-control {
             border-radius: 20px;
-            padding: 10px;
-            border: 1px solid #ced4da; /* Borda de inputs */
+            padding: 12px;
+            border: 1px solid #ced4da;
         }
         .form-control:focus {
-            box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25); /* Sombra ao focar no input */
-            border-color: #80bdff; /* Cor da borda ao focar */
+            box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+            border-color: #80bdff;
         }
         .table {
             margin-top: 20px;
         }
         .table thead th {
-            background-color: #003366; /* Azul Escuro */
+            background-color: #003366;
             color: #ffffff;
             text-align: center;
             cursor: pointer;
@@ -105,6 +103,7 @@
     <label for="searchInput" class="sr-only">Pesquisar produtos</label>
     <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Pesquisar produtos..." class="form-control mb-3" aria-label="Pesquisar produtos">
 
+    <!-- Mensagens Flash -->
     {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}
             <script>
@@ -220,33 +219,9 @@
             table.tBodies[0].appendChild(rows[i]);
         }
 
-        // Alterna a direção de ordenação
+        // Inverte a direção da ordenação para a próxima vez
         table.setAttribute('data-sort-asc', !ascending);
-
-        // Atualiza o estado de aria-sort
-        var headers = table.querySelectorAll('th');
-        headers.forEach(function(header, index) {
-            if (index === columnIndex) {
-                header.setAttribute('aria-sort', ascending ? 'descending' : 'ascending');
-            } else {
-                header.setAttribute('aria-sort', 'none');
-            }
-        });
     }
-
-    // Atualização automática da lista de produtos
-    function updateProductsList() {
-        $.ajax({
-            url: "{{ url_for('show_products') }}",
-            type: "GET",
-            success: function(data) {
-                $('#productsTable').html($(data).find('#productsTable').html());
-            }
-        });
-    }
-
-    // Atualizar a cada 10 segundos
-    setInterval(updateProductsList, 10000);
 </script>
 </body>
 </html>
