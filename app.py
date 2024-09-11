@@ -14,6 +14,8 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'your_secret_key')
 
 login_manager = LoginManager()
+login_manager.login_message = None
+
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
@@ -206,12 +208,13 @@ def login():
             user_obj = User(id=user[0], username=user[1], password=user[2])
             login_user(user_obj)
             flash('Login realizado com sucesso!', 'success')
-            return redirect(url_for('index'))
+            return redirect(url_for('index'))  # Redireciona após o login bem-sucedido
         else:
-            flash('Usuário ou senha inválidos.', 'danger')
+            flash('Usuário ou senha inválidos.', 'danger')  # Mensagem só em caso de erro
             return redirect(url_for('login'))
     
     return render_template('login.html')
+
 
 # Rota de registro
 @app.route('/register', methods=['GET', 'POST'])
